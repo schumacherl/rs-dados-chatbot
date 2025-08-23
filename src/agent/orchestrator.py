@@ -85,6 +85,11 @@ def route_intent(user_query: str) -> List[str]:
 
 # ==== Chamada ao LLM (placeholder seguro) ====
 from openai import OpenAI
+from dotenv import load_dotenv
+import os
+
+# carrega variáveis do .env
+load_dotenv()
 
 def call_llm(messages):
     client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
