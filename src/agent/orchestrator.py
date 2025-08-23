@@ -2,13 +2,15 @@ import os
 from typing import Dict, Any, List, Tuple, Union
 from collections import deque
 
+from pathlib import Path
 from dotenv import load_dotenv
 from openai import OpenAI
 
 from src.agent.prompt import SYSTEM_PROMPT
 
 # ---- .env ----
-load_dotenv(dotenv_path=".env")
+ROOT = Path(__file__).resolve().parents[2]
+load_dotenv(ROOT / ".env")
 
 # ==== memória curtinha ====
 _MEMORY = deque(maxlen=10)
