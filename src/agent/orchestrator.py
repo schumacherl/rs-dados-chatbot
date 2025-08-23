@@ -103,6 +103,7 @@ def call_llm(messages: List[Dict[str, str]]) -> str:
 
 # ==== loop do agente ====
 def run_agent(user_query: str) -> str:
+    print("DEBUG OPENAI_API_KEY:", os.getenv("OPENAI_API_KEY"))
     _push_memory(user_query)
 
     candidate_tools = route_intent(user_query)
