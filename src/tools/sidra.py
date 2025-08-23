@@ -66,20 +66,17 @@ def top_municipios_pop(_query: str) -> Tuple[str, List[str]]:
     df = pd.DataFrame(js[1:])
     cols = list(df.columns)
 
-    # detectar colunas possíveis
+    # detectar nomes possíveis
     val_col = _pick_col(["V", "Valor", "valor", "Value"], cols)
     mun_col = _pick_col(["D3N", "Município", "Municipio", "Nome do Município"], cols)
     uf_col  = _pick_col(["D1N", "UF", "Unidade da Federação"], cols)
 
     if not val_col or not mun_col:
-        # Ajuda no diagnóstico se quebrar de novo
         raise KeyError(f"Não achei colunas esperadas. Colunas recebidas: {cols}")
 
-    # Filtra RS se houver coluna de UF
     if uf_col:
         df = df[df[uf_col] == "Rio Grande do Sul"]
 
-    # Converte e prepara
     df[val_col] = pd.to_numeric(df[val_col], errors="coerce")
     df = df[[mun_col, val_col]].dropna().rename(columns={mun_col: "Município", val_col: "População"})
 
