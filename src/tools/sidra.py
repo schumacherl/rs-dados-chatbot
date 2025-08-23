@@ -52,44 +52,37 @@ def get_pib_rs_ano(query: str) -> Tuple[str, List[str]]:
 
 def top_municipios_pop(_query: str) -> Tuple[str, List[str]]:
     """
-    Retorna os 5 municípios mais populosos do RS (estimativa IBGE 2022).
-    Tabela 6579 (População residente - estimativa), variável 9324.
+    Top 5 municípios mais populosos do RS (IBGE/SIDRA 2022 – t6579, v9324).
+    Robusto a mudanças de nomes de colunas.
     """
     ano = "2022"
     url = f"{SIDRA_API}/t/6579/n6/all/v/9324/p/{ano}?formato=json"
     r = requests.get(url, timeout=30)
     r.raise_for_status()
     js = r.json()
-
     if len(js) < 2:
-        md = "Não encontrei dados de população para 2022."
-        return md, [f"SIDRA/IBGE • t6579 • {ano} • {url}"]
+        return "Não encontrei dados de população para 2022.", [f"SIDRA/IBGE • t6579 • {ano} • {url}"]
 
     df = pd.DataFrame(js[1:])
     cols = list(df.columns)
 
-    # detectar colunas
+    # detectar colunas possíveis
     val_col = _pick_col(["V", "Valor", "valor", "Value"], cols)
-    uf_col = _pick_col(["D1N", "UF", "Unidade da Federação"], cols)
     mun_col = _pick_col(["D3N", "Município", "Municipio", "Nome do Município"], cols)
+    uf_col  = _pick_col(["D1N", "UF", "Unidade da Federação"], cols)
 
-    if val_col is None or mun_col is None:
-        md = (
-            "Não consegui identificar as colunas esperadas no retorno do SIDRA.\n"
-            f"Colunas disponíveis: {cols}"
-        )
-        return md, [f"SIDRA/IBGE • t6579 • {ano} • {url}"]
+    if not val_col or not mun_col:
+        # Ajuda no diagnóstico se quebrar de novo
+        raise KeyError(f"Não achei colunas esperadas. Colunas recebidas: {cols}")
 
-    # filtrar RS se houver coluna de UF
-    if uf_col and uf_col in df.columns:
+    # Filtra RS se houver coluna de UF
+    if uf_col:
         df = df[df[uf_col] == "Rio Grande do Sul"]
 
-    # converter e limpar
+    # Converte e prepara
     df[val_col] = pd.to_numeric(df[val_col], errors="coerce")
-    df = df[[mun_col, val_col]].dropna()
-    df = df.rename(columns={mun_col: "Município", val_col: "População"})
+    df = df[[mun_col, val_col]].dropna().rename(columns={mun_col: "Município", val_col: "População"})
 
-    # ordenar top 5
     top5 = df.sort_values("População", ascending=False).head(5).copy()
     top5["População"] = top5["População"].astype(float).map(lambda x: f"{int(round(x)):,.0f}".replace(",", "."))
 
