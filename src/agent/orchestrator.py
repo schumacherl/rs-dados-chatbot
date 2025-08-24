@@ -7,6 +7,8 @@ from dotenv import load_dotenv
 from openai import OpenAI
 
 from src.agent.prompt import SYSTEM_PROMPT
+from dotenv import load_dotenv
+load_dotenv()
 
 # ---- .env ----
 ROOT = Path(__file__).resolve().parents[2]
