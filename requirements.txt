@@ -2,6 +2,7 @@ fastapi
 uvicorn
 requests
 pandas
-python-dotenv
 sentence-transformers
 faiss-cpu
+openai>=1.40
+python-dotenv>=1.0
